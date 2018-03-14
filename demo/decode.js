@@ -13,3 +13,4 @@ function decode(hash, URLs) {
 }
 
 module.exports = decode;
+
