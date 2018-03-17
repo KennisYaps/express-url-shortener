@@ -12,67 +12,25 @@ app.use(bodyParser.json());
 app.get("/", function(req, res) {
   res.send("Hello world!");
 });
-// TASK 1
+
 const existingURLs = [
   { id: "1", url: "www.google.com", hash: "MQ==" },
   { id: "2", url: "www.facebook.com", hash: "Mg==" }
 ];
-app.post("/shorten-url", function(req, res) {
-  var getURL = req.body.url;
-  var encoding = encode(getURL, existingURLs);
-  var matchingURLs = existingURLs.filter(element => element.url === getURL);
-  if (matchingURLs.length === 0) {
-    var newObject = {
-      id: Number.parseInt(existingURLs.length - 1) + 1,
-      url: getURL,
-      hash: encoding
-    };
-    existingURLs.push(newObject);
-  }
-  res.send({
-    hash: encoding
-  });
-});
 
-// TASK 2: POST /expand-url/:hash
-app.get("/expand-url/:hash", function(req, res) {
-  var getHash = req.params.hash;
+// BONUS TASK 1
+app.get("/:someHash", function(req, res) {
+  let getSomeHash = req.params.someHash;
   try {
-    var decodedURL = decode(getHash, existingURLs);
+    let decodedURL = decode(getSomeHash, existingURLs);
     res.status(200);
-    res.send(`{
-      "url": ${decodedURL}
-    }`);
+    let redirect = res.redirect("https://" + decodedURL);
   } catch (error) {
     res.status(404);
-    res.send(`{
-      "message": "There is no long URL registered for hash value ${getHash}"
-    }`);
+    res.send(`{"message": "URL with hash value ${getSomeHash} does not exist";
+   }`);
   }
 });
-
-// TASK 3: DELETE/expand-url/:hash
-app.delete("/expand-url/:hash", function(req, res) {
-  var getHash = req.params.hash;
-  let matchingHash = existingURLs.filter(
-    object =>
-      // you need to separate in order to debug what is object.hash
-      object.hash === getHash
-  );
-  if (matchingHash.length === 1) {
-    existingURLs.splice(0, 1);
-    res.status(200);
-    res.send(`{
-          "message": "URL with hash value ${getHash} deleted successfully";
-      }`);
-  } else {
-    res.status(404);
-    res.send(`{
-      "message": "URL with hash value ${getHash} does not exist";
-  }`);
-  }
-});
-
 // this read the error (404) and forward to error handler
 app.use(function(req, res, next) {
   const err = new Error("Not Found");
